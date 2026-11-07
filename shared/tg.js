@@ -7,7 +7,7 @@
  *  - window.TOOLS_START — id приложения из ссылки t.me/<бот>?startapp=<id>.
  */
 (function () {
-  const BOT = 'toolsbox_app'; // юзернейм бота без @, например 'toolsbox_app'. Пусто — делимся ссылкой на сайт.
+  const BOT = 'toolsbox_app'; // юзернейм бота без @. Пусто — делимся ссылкой на сайт.
   const SITE = 'https://z0rd4n0v1ch.github.io/tools-box/';
   const BG = '#16181B';
   const W = window.Telegram && window.Telegram.WebApp;

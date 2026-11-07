@@ -38,4 +38,5 @@ fi
 echo
 echo "== Готово!"
 echo "   Витрина:  https://z0rd4n0v1ch.github.io/tools-box/"
+echo "   Бот:      https://t.me/toolsbox_app"
 echo "   (если ссылка не открывается — включи Pages: Settings → Pages → Branch: main, папка / (root) → Save)"

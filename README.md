@@ -61,11 +61,11 @@ sync.sh               отправка на GitHub
 
 ## Telegram
 
-1. В @BotFather: `/newbot` → придумай имя и юзернейм (например, `toolsbox_app`).
+1. В @BotFather: `/newbot` → придумай имя и юзернейм (у витрины — `toolsbox_app`).
 2. `/mybots` → бот → Bot Settings → Configure Mini App → Enable Mini App →
    адрес `https://z0rd4n0v1ch.github.io/tools-box/`.
 3. Там же Menu Button → тот же адрес, текст «Открыть».
-4. Впиши юзернейм бота в `BOT` в `shared/tg.js` — тогда «Поделиться» будет давать ссылку на бота.
+4. Юзернейм бота записан в `BOT` в `shared/tg.js` (`toolsbox_app`) — поэтому «Поделиться» будет давать ссылку на бота.
 
 Ссылка `t.me/<бот>?startapp=<id>` сразу открывает нужное приложение, на сайте то же делает `#<id>`
 (например, `tools-box/#organizer`). В Telegram сайты приложений и APK открываются во внешнем браузере.
