@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#16181B">
+  <title>Tools Box</title>
+  <meta name="description" content="Tools Box — мои приложения в одном месте: Android, браузер и Telegram. Бесплатно.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="shared/tg.js"></script>
+  <style>.in-tg #install{display:none!important}</style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=PT+Mono&display=swap" rel="stylesheet">
+  <style>
+    /* Стена с инструментами: мастерская, перфорированная панель, приложения висят на крючках */
+    :root {
+      --bg: #16181B; --card: #1F2226; --line: #3A3F46; --text: #D8D4C8; --dim: #7C838C;
+      --accent: #FF8A3D; --accent-ink: #1A1208; --steel: #9FB4C7;
+      --board: #3A3F46; --board-hi: #474D55; --board-dk: #2A2E33; --hole: #15171A;
+      --frame: #5a4430; --frame-hi: #7b5d40; --frame-dk: #33261a;
+      --disp: "Russo One", "Arial Black", sans-serif; --mono: "PT Mono", "Courier New", monospace;
+      color-scheme: dark;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      background: repeating-linear-gradient(0deg, rgba(255,255,255,.015) 0 2px, transparent 2px 40px), var(--bg);
+      color: var(--text); font: 15px/1.6 var(--mono);
+      padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+    }
+    .wrap { max-width: 760px; margin: 0 auto; padding: max(28px, env(safe-area-inset-top, 0px)) 0 40px; }
+    header { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    h1 { margin: 0; font: 400 clamp(40px, 10vw, 62px)/1 var(--disp); color: var(--accent); letter-spacing: .02em; text-shadow: 3px 3px 0 #5a2a0c; }
+    .lead { max-width: 40em; margin: 12px 0 0; color: var(--steel); }
+    .tools { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tool-btn { font: 400 13px var(--disp); color: var(--text); background: var(--card); border: 1px solid var(--line); padding: 7px 11px; cursor: pointer; letter-spacing: .03em; }
+    .tool-btn:hover, .tool-btn:focus-visible { border-color: var(--accent); outline: none; }
+    .tool-btn.accent { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+    .tool-btn[hidden] { display: none; }
+    .net { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: .05em; margin-top: 8px; min-height: 1.2em; }
+    .net.off { color: #ffb36b; }
+
+    /* ---------- стена ---------- */
+    .wall { margin-top: 22px; padding: 12px; background: var(--frame);
+      box-shadow: inset 0 3px 0 var(--frame-hi), inset 0 -4px 0 var(--frame-dk), inset 3px 0 0 var(--frame-hi), inset -3px 0 0 var(--frame-dk), 0 8px 0 rgba(0,0,0,.35); }
+    .board { position: relative; display: grid; grid-template-columns: repeat(var(--cols, 4), 1fr); gap: 0 6px; padding: 10px 8px 14px;
+      background:
+        radial-gradient(circle at 12px 12px, var(--hole) 0 2.6px, transparent 3.2px) 0 0 / 24px 24px,
+        linear-gradient(var(--board-hi), var(--board) 6px, var(--board) calc(100% - 6px), var(--board-dk));
+      min-height: 220px; }
+    .slot { position: relative; height: 212px; border: 0; padding: 0; margin: 0; background: none; color: inherit; font: inherit; cursor: pointer; display: block; width: 100%; }
+    .slot .hook { position: absolute; left: 50%; top: 4px; width: 22px; height: 14px; margin-left: -11px;
+      background: linear-gradient(90deg, #8d969f 0 3px, #c8d0d7 3px 6px, #8d969f 6px 16px, #6b737b 16px); clip-path: polygon(0 0, 100% 0, 100% 40%, 65% 40%, 65% 100%, 35% 100%, 35% 40%, 0 40%); }
+    .slot .hang { position: absolute; left: 0; right: 0; top: 16px; display: flex; flex-direction: column; align-items: center; transform-origin: 50% 0; transition: transform .14s steps(3); }
+    .slot svg { display: block; height: 150px; width: auto; shape-rendering: crispEdges; filter: drop-shadow(5px 6px 0 rgba(0,0,0,.38)); }
+    .slot .tag { margin-top: 8px; max-width: 100%; padding: 3px 6px 4px; background: #e9e3cd; color: #17191c; border: 2px solid #121417;
+      font: 400 10px/1.15 var(--disp); text-transform: uppercase; text-align: center; letter-spacing: .02em;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .slot:hover .hang { transform: rotate(-3deg); }
+    .slot.sel .hang { transform: translateY(-6px); }
+    .slot.sel svg { filter: drop-shadow(8px 12px 0 rgba(0,0,0,.42)) brightness(1.1); }
+    .slot.sel .tag { background: var(--accent); }
+    .slot:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+    .slot.empty { cursor: default; }
+    .slot.empty .hook { opacity: .55; }
+    .slot.empty svg { filter: none; opacity: .5; }
+    .slot.empty .tag { background: transparent; color: #8d949c; border: 2px dashed #5d646c; }
+    .slot.empty:hover .hang { transform: none; }
+
+    /* ---------- карточка приложения ---------- */
+    .detail { margin-top: 30px; background: var(--card); border: 1px solid var(--line); display: grid; grid-template-columns: 132px 1fr; gap: 20px; padding: 20px; align-items: start; }
+    .detail .icon { width: 132px; aspect-ratio: 1; background: #121417; border: 3px solid #0d0e10; display: grid; place-items: center; overflow: hidden; }
+    .detail .icon img { width: 100%; height: 100%; object-fit: cover; }
+    .detail .icon .letter { font: 400 54px var(--disp); color: var(--accent); }
+    .detail h2 { margin: 0 0 6px; font: 400 26px/1.15 var(--disp); color: #F1EDE2; }
+    .detail p { margin: 0 0 10px; font-size: 14px; }
+    .tags { font-size: 12px; color: var(--steel); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+    .plat { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+    .plat span { font-size: 12px; padding: 1px 7px; border: 1px solid var(--line); color: var(--text); }
+    .ver { font-size: 13px; color: var(--dim); margin: 0 0 12px; min-height: 1.4em; }
+    .ver:empty { display: none; }
+    .ver b { font-weight: 400; color: var(--accent); }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; background: var(--accent); color: var(--accent-ink); font: 400 15px var(--disp); text-decoration: none; border: 0; cursor: pointer; }
+    .btn:hover { background: #FFA466; }
+    .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--line); }
+    .btn.ghost:hover { border-color: var(--accent); }
+    .btn[aria-disabled="true"] { background: #2a2e33; color: var(--dim); cursor: default; }
+    .btn:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+    .btn small { font: 12px var(--mono); opacity: .75; }
+    .hintkeys { margin-top: 10px; font-size: 12px; color: var(--dim); }
+    .feat { margin: 14px 0 0; border-top: 1px dashed var(--line); padding-top: 10px; font-size: 13px; }
+    .feat summary { cursor: pointer; color: var(--accent); font: 400 15px var(--disp); list-style: none; }
+    .feat summary::-webkit-details-marker { display: none; }
+    .feat summary::before { content: "▸ "; } .feat[open] summary::before { content: "▾ "; }
+    .feat ul { margin: 8px 0 2px; padding-left: 18px; } .feat li { margin: 3px 0; }
+
+    dialog { max-width: 560px; width: calc(100% - 32px); background: var(--card); color: var(--text); border: 1px solid var(--accent); padding: 22px 22px 18px; font: 14px/1.6 var(--mono); }
+    dialog::backdrop { background: rgba(6,7,8,.75); }
+    dialog h2 { margin: 0 0 10px; font: 400 24px var(--disp); color: var(--accent); }
+    dialog h3 { margin: 16px 0 4px; font: 400 15px var(--disp); color: #F1EDE2; }
+    dialog ul { margin: 4px 0; padding-left: 18px; }
+    dialog a { color: var(--accent); }
+    dialog .close { margin-top: 16px; }
+
+    footer { margin-top: 36px; font-size: 13px; color: var(--dim); }
+    .empty-msg { color: var(--dim); grid-column: 1 / -1; padding: 30px 10px; } .empty-msg code { color: var(--text); }
+    @media (max-width: 560px) {
+      .detail { grid-template-columns: 1fr; } .detail .icon { width: 96px; }
+      .slot { height: 184px; } .slot svg { height: 122px; }
+    }
+    @media (hover: none) { .hintkeys { display: none; } }
+    @media (prefers-reduced-motion: reduce) { .slot .hang { transition: none; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Tools Box</h1>
+      <div class="tools">
+        <button class="tool-btn accent" id="install" hidden>Установить</button>
+        <button class="tool-btn" id="aboutBtn">О проекте</button>
+      </div>
+    </header>
+    <p class="lead">Мои приложения в одном месте. Сними инструмент со стены: откроется описание, веб-версия и APK для Android. Бесплатно и без рекламы.</p>
+    <div class="net" id="net"></div>
+    <div class="wall"><section class="board" id="board" aria-label="Стена с приложениями"></section></div>
+    <section class="detail" id="detail" aria-live="polite"></section>
+    <footer>Tools Box · версии и APK берутся из релизов GitHub · данные приложений хранятся на твоём устройстве</footer>
+  </div>
+
+  <dialog id="about">
+    <h2>О проекте</h2>
+    <p>Tools Box — витрина моих приложений. Каждое висит на стене мастерской, как инструмент на своём крючке.</p>
+    <h3>Как пользоваться</h3>
+    <ul>
+      <li>Нажми на инструмент — внизу появится описание приложения.</li>
+      <li>«Открыть» запускает веб-версию прямо в браузере, «Скачать APK» — последнюю версию для Android с GitHub.</li>
+      <li>Пунктирный контур на стене — место для следующего приложения.</li>
+      <li>«Установить» добавит Tools Box на главный экран.</li>
+    </ul>
+    <h3>Установка APK на Android</h3>
+    <ul>
+      <li>Скачай APK и открой его из уведомления или папки «Загрузки».</li>
+      <li>Если телефон спросит — разреши установку из этого источника.</li>
+    </ul>
+    <h3>Исходный код</h3>
+    <p><a href="https://github.com/Z0rD4n0v1ch/tools-box" target="_blank" rel="noopener">github.com/Z0rD4n0v1ch/tools-box</a></p>
+    <form method="dialog"><button class="btn close">Закрыть</button></form>
+  </dialog>
+
+  <script src="apps/list.js"></script>
+  <script>
+  (function () {
+    'use strict';
+    const apps = (window.TOOLS_APPS || []).filter((a) => !a.hidden);
+    const board = document.getElementById('board'), detail = document.getElementById('detail');
+    const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const store = {
+      get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+      set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+    };
+    const open = (url) => (window.toolsOpen ? window.toolsOpen(url) : window.open(url, '_blank', 'noopener'));
+
+    /* ---------- пиксельные инструменты ----------
+       c/h/d — цвет ручки (основной/светлый/тёмный), m/M — металл, s — экран, w — белый, r/K — провода.
+       Контур рисуется сам вокруг закрашенных клеток. */
+    const MAPS = {
+      screwdriver: [
+        '.hccd.', 'hhcccd', 'hcdccd', 'hhcccd', 'hcdccd', 'hhcccd', 'hcdccd', 'hhcccd', 'hcdccd', 'hhcccd', 'hcdccd', '.hccd.',
+        '.MmmM.', '..mM..', '..mM..', '..mM..', '..mM..', '..mM..', '..mM..', '..mM..', '..mM..', '..mM..', '..mM..',
+        '..mM..', '..mM..', '..mM..', '..mM..', '..mm..', '..m...'
+      ],
+      wrench: [
+        '.mm..mm.', 'mmm..mmM', 'mmm..mmM', 'mmmmmmmM', '.mmmmmM.', '..mmmM..', '..mmmM..', '..mmmM..',
+        '..hccd..', '..hccd..', '..hcdd..', '..hccd..', '..hccd..', '..hcdd..', '..hccd..', '..hccd..', '..hcdd..', '..hccd..',
+        '..mmmM..', '..mmmM..', '..mmmM..', '.mmmmmM.', 'mmm..mmM', 'mmm..mmM', '.mmmmmM.', '..mmmM..'
+      ],
+      multimeter: [
+        '.cccccccccc.', 'hcccccccccdd', 'hckkkkkkkkcd', 'hcksssssskcd', 'hcksswssskcd', 'hcksssssskcd', 'hckkkkkkkkcd',
+        'hcccccccccdd', 'hcccmmmmcccd', 'hccmMMMMmccd', 'hccmMwwMmccd', 'hccmMMMMmccd', 'hcccmmmmcccd', 'hcccccccccdd',
+        'hckkcckkckkd', 'hcccccccccdd', '.dddddddddd.', '..r......K..', '..r......K..', '..r.....K...', '...r....K...',
+        '...r...K....', '...rr..KK...', '....r..K....'
+      ],
+      hammer: [
+        '..mmmmmmmmmmM.', 'mmmmmmmmmmmmMM', 'mmmmmmmmmmmmMM', '....MMMMMM....',
+        '.....hcd......', '.....hcd......', '.....hcd......', '.....hcd......', '.....hcd......', '.....hcd......',
+        '.....hcd......', '.....hcd......', '.....hdd......', '.....hcd......', '.....hdd......', '.....hcd......',
+        '.....hdd......', '.....hcd......', '.....hcd......', '......d.......'
+      ]
+    };
+    const FIXED = { m: '#c3cbd2', M: '#7f8892', s: '#9fe07a', w: '#f4f1e6', r: '#d23b2b', K: '#2b2f36', k: '#121417' };
+    function toolSvg(kind, pal, shadow) {
+      const map = MAPS[kind] || MAPS.wrench, H = map.length, Wd = Math.max(...map.map((r) => r.length));
+      const at = (x, y) => (y >= 0 && y < H && x >= 0 && x < (map[y] || '').length ? map[y][x] : '.');
+      const color = (ch) => (ch === 'c' ? pal[0] : ch === 'h' ? pal[1] : ch === 'd' ? pal[2] : FIXED[ch]);
+      let out = '';
+      for (let y = -1; y <= H; y++) {
+        for (let x = -1; x <= Wd; x++) {
+          const ch = at(x, y);
+          if (ch !== '.') {
+            out += '<rect x="' + (x + 1) + '" y="' + (y + 1) + '" width="1" height="1" fill="' + (shadow ? '#2f343a' : color(ch)) + '"/>';
+          } else if (at(x - 1, y) !== '.' || at(x + 1, y) !== '.' || at(x, y - 1) !== '.' || at(x, y + 1) !== '.') {
+            out += '<rect x="' + (x + 1) + '" y="' + (y + 1) + '" width="1" height="1" fill="' + (shadow ? '#5d646c' : FIXED.k) + '"/>';
+          }
+        }
+      }
+      return '<svg viewBox="0 0 ' + (Wd + 2) + ' ' + (H + 2) + '" aria-hidden="true">' + out + '</svg>';
+    }
+    const PAL = [['#d9862b', '#f2a94e', '#8e5016'], ['#2f78c4', '#5aa2e6', '#1b4878'], ['#c23b3b', '#e46a5e', '#7a1f1f'], ['#3f8a4a', '#66b36f', '#22512a']];
+    const KINDS = ['wrench', 'screwdriver', 'hammer', 'multimeter'];
+
+    /* ---------- стена ---------- */
+    let slots = [], sel = 0;
+    function cols() { const w = board.clientWidth; return w < 360 ? 3 : w < 560 ? 3 : 4; }
+    function render() {
+      board.innerHTML = ''; slots = [];
+      const n = cols(); board.style.setProperty('--cols', n);
+      if (!apps.length) {
+        board.innerHTML = '<p class="empty-msg">Стена пуста. Добавь приложение в <code>apps/list.js</code>.</p>';
+        detail.hidden = true; return;
+      }
+      const total = Math.max(n, Math.ceil((apps.length + 1) / n) * n); // всегда хотя бы одно свободное место
+      for (let i = 0; i < total; i++) {
+        const a = apps[i], b = document.createElement('button');
+        b.className = 'slot';
+        if (a) {
+          const pal = a.color ? [a.color, a.colorHi || a.color, a.colorDk || '#121417'] : PAL[i % PAL.length];
+          b.innerHTML = '<span class="hook"></span><span class="hang">' + toolSvg(a.tool || KINDS[i % KINDS.length], pal, false) +
+            '<span class="tag">' + esc(a.title) + '</span></span>';
+          b.setAttribute('aria-label', a.title);
+          b.addEventListener('click', () => select(i, true));
+          slots[i] = b;
+        } else {
+          b.classList.add('empty'); b.disabled = true; b.setAttribute('aria-hidden', 'true');
+          b.innerHTML = '<span class="hook"></span><span class="hang">' + toolSvg(KINDS[i % KINDS.length], null, true) + '<span class="tag">Скоро</span></span>';
+        }
+        board.appendChild(b);
+      }
+      select(sel, false);
+    }
+
+    /* ---------- релиз с GitHub: версия и APK, кэш на 3 часа ---------- */
+    async function release(repo) {
+      const key = 'tools:rel:' + repo, c = store.get(key, null);
+      if (c && Date.now() - c.t < 3 * 3600e3) return c.v;
+      try {
+        const r = await fetch('https://api.github.com/repos/' + repo + '/releases/latest', { headers: { Accept: 'application/vnd.github+json' } });
+        if (!r.ok) throw new Error(r.status);
+        const j = await r.json();
+        const v = {
+          tag: j.tag_name || j.name || '', date: j.published_at || '', page: j.html_url || '',
+          apks: (j.assets || []).filter((x) => /\.apk$/i.test(x.name)).map((x) => ({ name: x.name, url: x.browser_download_url, size: x.size }))
+        };
+        store.set(key, { t: Date.now(), v: v });
+        return v;
+      } catch (e) { return c ? c.v : null; }
+    }
+    const mb = (b) => (b ? ' <small>' + (b / 1048576).toFixed(1).replace('.', ',') + ' МБ</small>' : '');
+    const dateRu = (s) => { try { return new Date(s).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) { return ''; } };
+
+    function downloadButtons(a, rel) {
+      const list = a.downloads && a.downloads.length ? a.downloads : [{ label: 'Скачать APK', match: '\\.apk$' }];
+      if (!a.repo) return a.soon ? '<span class="btn" aria-disabled="true">' + esc(a.soon) + '</span>' : '';
+      const page = rel && rel.page ? rel.page : 'https://github.com/' + a.repo + '/releases/latest';
+      return list.map((d) => {
+        const re = new RegExp(d.match || '\\.apk$', 'i');
+        const f = rel && rel.apks ? rel.apks.find((x) => re.test(x.name)) : null;
+        return '<a class="btn" href="' + esc(f ? f.url : page) + '" data-ext="1">⬇ ' + esc(d.label) + (f ? mb(f.size) : '') + '</a>';
+      }).join('');
+    }
+
+    function select(i, focus) {
+      if (!apps.length) return;
+      sel = (i + apps.length) % apps.length; store.set('tools:sel', sel);
+      slots.forEach((s, k) => s && s.classList.toggle('sel', k === sel));
+      const a = apps[sel];
+      const icon = a.icon ? '<img src="' + esc(a.icon) + '" alt="">' : '<span class="letter">' + esc((a.title || '?').trim()[0]) + '</span>';
+      const web = a.web ? '<a class="btn" href="' + esc(a.web) + '" data-ext="1">▶ Открыть</a>' : '';
+      const src = a.repo ? '<a class="btn ghost" href="https://github.com/' + esc(a.repo) + '" data-ext="1">Исходный код</a>' : '';
+      detail.innerHTML =
+        '<div class="icon">' + icon + '</div>' +
+        '<div><h2>' + esc(a.title) + '</h2>' + (a.note ? '<p>' + esc(a.note) + '</p>' : '') +
+        (a.tags && a.tags.length ? '<div class="tags">' + a.tags.map(esc).join(' · ') + '</div>' : '') +
+        (a.platforms && a.platforms.length ? '<div class="plat">' + a.platforms.map((p) => '<span>' + esc(p) + '</span>').join('') + '</div>' : '') +
+        '<div class="ver" id="ver">' + (a.repo ? 'Проверяю последнюю версию…' : '') + '</div>' +
+        '<div class="actions" id="actions">' + web + downloadButtons(a, null) + src +
+        '<button class="btn ghost" id="share" type="button">Поделиться</button></div>' +
+        '<div class="hintkeys">◄ ► — выбрать · Enter — открыть · 1–9 — сразу</div>' +
+        (a.features && a.features.length ? '<details class="feat"><summary>Возможности</summary><ul>' + a.features.map((f) => '<li>' + esc(f) + '</li>').join('') + '</ul></details>' : '') +
+        '</div>';
+      bindLinks();
+      document.getElementById('share').addEventListener('click', () => window.toolsShare && window.toolsShare(a.id, a.title));
+      if (focus && slots[sel]) slots[sel].focus({ preventScroll: true });
+      if (history.replaceState) history.replaceState(null, '', '#' + a.id);
+      if (a.repo) {
+        const want = sel;
+        release(a.repo).then((rel) => {
+          if (want !== sel) return;
+          const ver = document.getElementById('ver');
+          if (rel && rel.tag) {
+            ver.innerHTML = 'Последняя версия: <b>' + esc(rel.tag) + '</b>' + (rel.date ? ' · ' + esc(dateRu(rel.date)) : '');
+            const act = document.getElementById('actions');
+            act.innerHTML = web + downloadButtons(a, rel) + src + '<button class="btn ghost" id="share" type="button">Поделиться</button>';
+            bindLinks();
+            document.getElementById('share').addEventListener('click', () => window.toolsShare && window.toolsShare(a.id, a.title));
+          } else {
+            ver.textContent = navigator.onLine ? 'Релизов пока нет' : 'Нет сети — версия появится, когда будет интернет';
+          }
+        });
+      }
+    }
+    function bindLinks() {
+      detail.querySelectorAll('a[data-ext]').forEach((el) => el.addEventListener('click', (e) => { e.preventDefault(); open(el.href); }));
+    }
+    function launch() { const a = apps[sel]; if (a && a.web) open(a.web); }
+
+    document.addEventListener('keydown', (e) => {
+      if (document.getElementById('about').open) return;
+      const onSlot = document.activeElement && document.activeElement.classList.contains('slot');
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); select(sel + 1, true); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); select(sel - 1, true); }
+      else if (e.key === 'Enter' && onSlot) { e.preventDefault(); launch(); }
+      else if (/^[1-9]$/.test(e.key) && apps[+e.key - 1]) select(+e.key - 1, true);
+    });
+
+    /* стартовое приложение: t.me/<бот>?startapp=<id>, адрес #<id> или последнее выбранное */
+    const startId = window.TOOLS_START || decodeURIComponent(location.hash.slice(1) || '');
+    const fromId = apps.findIndex((a) => a.id === startId);
+    sel = fromId >= 0 ? fromId : Math.min(store.get('tools:sel', 0) || 0, Math.max(0, apps.length - 1));
+    let rz, lastCols = 0;
+    addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (cols() !== lastCols) { lastCols = cols(); render(); } }, 120); });
+    lastCols = cols(); render();
+
+    /* ---------- о проекте ---------- */
+    const about = document.getElementById('about');
+    document.getElementById('aboutBtn').addEventListener('click', () => { if (about.showModal) about.showModal(); else about.setAttribute('open', ''); });
+    about.querySelectorAll('a').forEach((el) => el.addEventListener('click', (e) => { e.preventDefault(); open(el.href); }));
+
+    /* ---------- установка и офлайн ---------- */
+    const inst = document.getElementById('install'), net = document.getElementById('net');
+    let ev = null;
+    addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); ev = e; inst.hidden = false; });
+    inst.addEventListener('click', async () => { if (!ev) return; ev.prompt(); try { await ev.userChoice; } catch (e) {} ev = null; inst.hidden = true; });
+    addEventListener('appinstalled', () => { inst.hidden = true; });
+    function netState() { net.textContent = navigator.onLine ? '' : 'Нет сети — витрина работает из кэша'; net.className = 'net' + (navigator.onLine ? '' : ' off'); }
+    addEventListener('online', netState); addEventListener('offline', netState); netState();
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
+  })();
+  </script>
+</body>
+</html>
