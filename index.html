@@ -264,9 +264,11 @@
     const mb = (b) => (b ? ' <small>' + (b / 1048576).toFixed(1).replace('.', ',') + ' МБ</small>' : '');
     const dateRu = (s) => { try { return new Date(s).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) { return ''; } };
 
-    function downloadButtons(a, rel) {
+    function downloadButtons(a, rel, loaded) {
       const list = a.downloads && a.downloads.length ? a.downloads : [{ label: 'Скачать APK', match: '\\.apk$' }];
-      if (!a.repo) return a.soon ? '<span class="btn" aria-disabled="true">' + esc(a.soon) + '</span>' : '';
+      const soon = a.soon ? '<span class="btn" aria-disabled="true">' + esc(a.soon) + '</span>' : '';
+      if (!a.repo) return soon;
+      if (a.soon && (!loaded || !rel || !rel.tag)) return soon; // релиза ещё нет (или пока проверяем)
       const page = rel && rel.page ? rel.page : 'https://github.com/' + a.repo + '/releases/latest';
       return list.map((d) => {
         const re = new RegExp(d.match || '\\.apk$', 'i');
@@ -289,7 +291,7 @@
         (a.tags && a.tags.length ? '<div class="tags">' + a.tags.map(esc).join(' · ') + '</div>' : '') +
         (a.platforms && a.platforms.length ? '<div class="plat">' + a.platforms.map((p) => '<span>' + esc(p) + '</span>').join('') + '</div>' : '') +
         '<div class="ver" id="ver">' + (a.repo ? 'Проверяю последнюю версию…' : '') + '</div>' +
-        '<div class="actions" id="actions">' + web + downloadButtons(a, null) + src +
+        '<div class="actions" id="actions">' + web + downloadButtons(a, null, false) + src +
         '<button class="btn ghost" id="share" type="button">Поделиться</button></div>' +
         '<div class="hintkeys">◄ ► — выбрать · Enter — открыть · 1–9 — сразу</div>' +
         (a.features && a.features.length ? '<details class="feat"><summary>Возможности</summary><ul>' + a.features.map((f) => '<li>' + esc(f) + '</li>').join('') + '</ul></details>' : '') +
@@ -306,11 +308,14 @@
           if (rel && rel.tag) {
             ver.innerHTML = 'Последняя версия: <b>' + esc(rel.tag) + '</b>' + (rel.date ? ' · ' + esc(dateRu(rel.date)) : '');
             const act = document.getElementById('actions');
-            act.innerHTML = web + downloadButtons(a, rel) + src + '<button class="btn ghost" id="share" type="button">Поделиться</button>';
+            act.innerHTML = web + downloadButtons(a, rel, true) + src + '<button class="btn ghost" id="share" type="button">Поделиться</button>';
             bindLinks();
             document.getElementById('share').addEventListener('click', () => window.toolsShare && window.toolsShare(a.id, a.title));
           } else {
             ver.textContent = navigator.onLine ? 'Релизов пока нет' : 'Нет сети — версия появится, когда будет интернет';
+            if (a.soon) document.getElementById('actions').innerHTML = web + downloadButtons(a, null, true) + src + '<button class="btn ghost" id="share" type="button">Поделиться</button>';
+            bindLinks();
+            document.getElementById('share').addEventListener('click', () => window.toolsShare && window.toolsShare(a.id, a.title));
           }
         });
       }
