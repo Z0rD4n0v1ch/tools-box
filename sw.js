@@ -1,6 +1,6 @@
 // Tools Box — офлайн-кэш витрины. Всегда сначала сеть (no-cache), кэш — только без интернета.
 // При изменении файлов витрины увеличь VERSION.
-const VERSION = 'toolsbox-v1';
+const VERSION = 'toolsbox-v2';
 const FILES = ['./', './index.html', './apps/list.js', './shared/tg.js', './manifest.webmanifest', './icon-192.png', './icon-512.png',
   './apps/organizer/icon.png', './apps/phone-to-tv/icon.png'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(VERSION).then((c) => c.addAll(FILES)).then(() => self.skipWaiting())); });
